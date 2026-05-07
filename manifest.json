@@ -2,23 +2,37 @@
   "name": "보물창고",
   "short_name": "보물창고",
   "description": "내가 아끼는 물건을 관리하는 앱",
-  "start_url": ".",
+  "start_url": "/bogulchanggo/index.html",
+  "scope": "/bogulchanggo/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f7f5f0",
   "theme_color": "#1a1814",
-  "orientation": "portrait",
+  "lang": "ko",
   "icons": [
     {
       "src": "icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

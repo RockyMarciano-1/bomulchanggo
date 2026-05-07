@@ -1,20 +1,48 @@
-const CACHE = 'bogulchanggo-v1';
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg'];
+const CACHE_NAME = 'bogulchanggo-v3';
+const ASSETS = [
+  '/bogulchanggo/',
+  '/bogulchanggo/index.html',
+  '/bogulchanggo/manifest.json',
+  '/bogulchanggo/icon-192.svg',
+  '/bogulchanggo/icon-512.svg'
+];
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
-  self.skipWaiting();
+// 설치 — 캐시 등록
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
-  self.clients.claim();
+// 활성화 — 이전 캐시 삭제
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
+  );
 });
 
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+// 요청 처리 — 캐시 우선, 없으면 네트워크
+self.addEventListener('fetch', event => {
+  // POST 요청은 캐시 처리 안 함
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+      return fetch(event.request).then(response => {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+        return response;
+      });
+    })
   );
 });
