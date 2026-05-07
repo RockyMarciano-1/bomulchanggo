@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<!-- saved from url=(0044)file:///C:/Users/ohyg/Downloads/index_1.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="보물창고">
+<meta name="theme-color" content="#1a1a1a">
+<link rel="manifest" href="file:///C:/Users/ohyg/Downloads/manifest.json">
+<link rel="apple-touch-icon" href="file:///C:/Users/ohyg/Downloads/icon-192.svg">
+<title>보물창고</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1a1814;
+    --text2: #6b6760;
+    --text3: #a09d98;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); font-family: 'Noto Sans KR', sans-serif; color: var(--text); }
+
+  #app { max-width: 480px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+
+  .header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 16px 18px 12px; position: sticky; top: 0; z-index: 50;
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .header-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 10px;
+    border: 1px solid var(--border2); background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text2);
+  }
+  .icon-btn:active { background: var(--surface2); transform: scale(0.95); }
+
+  .tabs { display: flex; }
+  .tab {
+    flex: 1; padding: 8px 0; font-size: 13px; color: var(--text3);
+    border: none; background: none; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.15s; font-family: inherit;
+  }
+  .tab.active { color: var(--text); font-weight: 700; border-bottom-color: var(--text); }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px 18px; }
+  .stat-card {
+    background: var(--surface); border-radius: var(--radius-sm);
+    border: 1px solid var(--border); padding: 12px 14px; text-align: center;
+  }
+  .stat-label { font-size: 10px; color: var(--text3); margin-bottom: 3px; }
+  .stat-val { font-size: 22px; font-weight: 700; }
+
+  .filter-bar { padding: 0 18px 12px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    white-space: nowrap; padding: 6px 13px; border-radius: 20px; font-size: 12px;
+    border: 1px solid var(--border2); background: var(--surface); color: var(--text2);
+    cursor: pointer; font-family: inherit; flex-shrink: 0;
+  }
+  .filter-chip.active { background: var(--text); color: #fff; border-color: var(--text); font-weight: 500; }
+  .filter-chip:active { transform: scale(0.96); }
+
+  .search-bar { padding: 0 18px 14px; }
+  .search-input {
+    width: 100%; padding: 10px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border2); background: var(--surface);
+    font-size: 14px; font-family: inherit; color: var(--text); outline: none;
+  }
+  .search-input::placeholder { color: var(--text3); }
+  .search-input:focus { border-color: var(--text); }
+
+  .list-area { flex: 1; padding: 0 18px 100px; }
+  .section-label { font-size: 11px; color: var(--text3); margin-bottom: 10px; font-weight: 500; }
+  .item-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .item-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 14px 14px 12px;
+    display: flex; gap: 12px; align-items: flex-start;
+    box-shadow: var(--shadow); cursor: pointer;
+  }
+  .item-card:active { background: #fafaf8; }
+  .item-thumb {
+    width: 54px; height: 54px; border-radius: 12px; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0; border: 1px solid var(--border); overflow: hidden;
+  }
+  .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-memo { font-size: 12px; color: var(--text3); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-meta { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 500; }
+  .badge-own { background: #e8f5e9; color: #2e7d32; }
+  .badge-wish { background: #fce4ec; color: #880e4f; }
+  .badge-cat { background: var(--surface2); color: var(--text2); }
+  .priority-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .p-high { background: #e53935; } .p-mid { background: #fb8c00; } .p-low { background: #43a047; }
+  .item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+  .item-price { font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .item-date-sm { font-size: 10px; color: var(--text3); white-space: nowrap; }
+  .dispose-btn {
+    width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border2);
+    background: var(--bg); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text3);
+  }
+  .dispose-btn:active { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; }
+
+  .fab {
+    position: fixed; bottom: 28px; right: 50%; transform: translateX(50%);
+    width: calc(100% - 36px); max-width: calc(480px - 36px);
+    background: var(--text); color: #fff; border: none; border-radius: 14px;
+    padding: 16px; font-size: 15px; font-weight: 700; font-family: inherit;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center; gap: 8px; z-index: 40;
+  }
+  .fab:active { opacity: 0.9; transform: translateX(50%) scale(0.98); }
+
+  /* 오버레이 (바텀시트) */
+  .overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 100; align-items: flex-end; justify-content: center;
+  }
+  .overlay.open { display: flex; }
+  .sheet {
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 480px; padding: 20px 20px 40px;
+    max-height: 92dvh; overflow-y: auto;
+  }
+  .sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 18px; }
+  .sheet-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; }
+
+  /* 상세 — 풀스크린 슬라이드업 */
+  .overlay-full {
+    display: none; position: fixed; inset: 0; background: var(--bg);
+    z-index: 200; flex-direction: column; overflow-y: auto;
+  }
+  .overlay-full.open { display: flex; }
+  .detail-header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 18px; display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .back-btn {
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border2);
+    background: var(--bg); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text2); flex-shrink: 0;
+  }
+  .back-btn:active { background: var(--surface2); }
+  .detail-header-title { font-size: 16px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .detail-body { padding: 18px; }
+  .detail-photo {
+    width: 100%; aspect-ratio: 1/1; border-radius: var(--radius); background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 64px; margin-bottom: 18px; border: 1px solid var(--border); overflow: hidden;
+  }
+  .detail-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .detail-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; line-height: 1.3; }
+  .detail-meta-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .detail-section { margin-bottom: 20px; }
+  .detail-section-label { font-size: 11px; color: var(--text3); font-weight: 500; letter-spacing: 0.4px; margin-bottom: 8px; text-transform: uppercase; }
+  .detail-row {
+    background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border);
+    padding: 13px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+  }
+  .detail-row-label { font-size: 13px; color: var(--text2); }
+  .detail-row-val { font-size: 13px; font-weight: 500; }
+  .detail-memo-box {
+    background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border);
+    padding: 13px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
+    white-space: pre-wrap;
+  }
+  .detail-actions { padding: 0 18px 48px; }
+
+  /* 폼 */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; display: block; font-weight: 500; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border2); background: var(--bg);
+    font-size: 14px; font-family: inherit; color: var(--text); outline: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--text); background: var(--surface); }
+  .form-textarea { height: 72px; resize: none; }
+  .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* 사진 업로드 */
+  .photo-area {
+    width: 100%; border-radius: var(--radius-sm); border: 1.5px dashed var(--border2);
+    background: var(--bg); display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; gap: 6px; margin-bottom: 14px;
+    overflow: hidden; position: relative; min-height: 120px;
+  }
+  .photo-area img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .photo-area-text { font-size: 13px; color: var(--text3); z-index: 1; }
+  .photo-area-icon { font-size: 26px; z-index: 1; }
+  .photo-area.has-photo .photo-area-text,
+  .photo-area.has-photo .photo-area-icon { display: none; }
+  .photo-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .photo-btn {
+    padding: 10px 8px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border2); background: var(--bg);
+    color: var(--text2); font-size: 13px; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .photo-btn:active { background: var(--surface2); }
+  .photo-btn-full { grid-column: 1 / -1; }
+
+  /* 버튼 */
+  .btn-primary {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    background: var(--text); color: #fff; border: none;
+    font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+  }
+  .btn-primary:active { opacity: 0.85; }
+  .btn-secondary {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    background: var(--surface2); color: var(--text); border: none;
+    font-size: 15px; font-weight: 500; font-family: inherit; cursor: pointer; margin-top: 8px;
+  }
+  .btn-danger {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    background: #c62828; color: #fff; border: none;
+    font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+    opacity: 0.35; transition: opacity 0.15s;
+  }
+  .btn-danger.enabled { opacity: 1; }
+  .btn-danger-outline {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    background: none; color: #c62828; border: 1px solid #ef9a9a;
+    font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+  }
+  .btn-danger-outline:active { background: #ffebee; }
+
+  /* 처분 */
+  .dispose-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+  .dispose-opt {
+    padding: 16px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border2); background: var(--bg);
+    text-align: center; cursor: pointer;
+  }
+  .dispose-opt.selected { border-color: #c62828; background: #ffebee; }
+  .dispose-opt:active { transform: scale(0.97); }
+  .dispose-opt-icon { font-size: 24px; margin-bottom: 5px; }
+  .dispose-opt-label { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .dispose-opt-sub { font-size: 11px; color: var(--text3); }
+
+  /* 카테고리 */
+  .cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .cat-row { display: flex; gap: 8px; align-items: center; }
+  .cat-row .form-input { flex: 1; }
+  .cat-del {
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border2);
+    background: var(--bg); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text3); flex-shrink: 0; font-size: 14px;
+  }
+  .cat-del:active { background: #ffebee; color: #c62828; }
+  .add-cat-row {
+    width: 100%; padding: 11px; border-radius: var(--radius-sm);
+    border: 1px dashed var(--border2); background: none; color: var(--text3);
+    font-size: 13px; font-family: inherit; cursor: pointer; margin-bottom: 14px;
+  }
+
+  /* 카메라 오버레이 */
+  .cam-overlay {
+    display: none; position: fixed; inset: 0; background: #000;
+    z-index: 300; flex-direction: column;
+  }
+  .cam-overlay.open { display: flex; }
+  .cam-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; background: rgba(0,0,0,0.6);
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  }
+  .cam-title { color: #fff; font-size: 15px; font-weight: 500; }
+  .cam-close, .cam-flip {
+    width: 40px; height: 40px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.15); display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+  }
+  .cam-close:active, .cam-flip:active { background: rgba(255,255,255,0.3); }
+  .cam-viewfinder {
+    flex: 1; position: relative; display: flex;
+    align-items: center; justify-content: center; overflow: hidden;
+  }
+  #cam-video { width: 100%; height: 100%; object-fit: cover; }
+  .cam-guide {
+    position: absolute; width: 70%; aspect-ratio: 1;
+    border: 2px solid rgba(255,255,255,0.4); border-radius: 12px;
+    pointer-events: none;
+  }
+  .cam-footer {
+    background: rgba(0,0,0,0.6); padding: 28px 0 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cam-shutter-wrap { display: flex; align-items: center; justify-content: center; }
+  .cam-shutter {
+    width: 70px; height: 70px; border-radius: 50%;
+    background: #fff; border: 4px solid rgba(255,255,255,0.5);
+    cursor: pointer; outline: 4px solid rgba(255,255,255,0.3);
+    outline-offset: 4px; transition: transform 0.1s;
+  }
+  .cam-shutter:active { transform: scale(0.92); background: #ddd; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-top">
+      <span class="header-title">🏺 보물창고</span>
+      <button class="icon-btn" onclick="openCatModal()" title="카테고리 관리">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect>
+          <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect>
+          <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect>
+          <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect>
+        </svg>
+      </button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(&#39;all&#39;,this)">전체</button>
+      <button class="tab" onclick="switchTab(&#39;own&#39;,this)">소장 중</button>
+      <button class="tab" onclick="switchTab(&#39;wish&#39;,this)">위시리스트</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats-row">
+    <div class="stat-card"><div class="stat-label">소장 중</div><div class="stat-val">0개</div></div>
+    <div class="stat-card"><div class="stat-label">위시리스트</div><div class="stat-val">0개</div></div>
+  </div>
+  <div class="filter-bar" id="filter-bar"><button class="filter-chip active" onclick="setFilter(&#39;all&#39;)">전체</button><button class="filter-chip" onclick="setFilter(&#39;전자기기&#39;)">전자기기</button><button class="filter-chip" onclick="setFilter(&#39;의류/패션&#39;)">의류/패션</button><button class="filter-chip" onclick="setFilter(&#39;골동품/수집품&#39;)">골동품/수집품</button></div>
+  <div class="search-bar">
+    <input class="search-input" type="text" placeholder="🔍  물건 검색..." id="search-input" oninput="renderItems()">
+  </div>
+  <div class="list-area">
+    <div class="section-label" id="section-label">0개 항목</div>
+    <div class="item-list" id="item-list"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">등록된 물건이 없습니다</div></div></div>
+  </div>
+
+  <button class="fab" onclick="openAddModal()">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="white" stroke-width="2" stroke-linecap="round"></path></svg>
+    물건 추가
+  </button>
+</div>
+
+<!-- 물건 추가 시트 -->
+<div class="overlay" id="sheet-add" onclick="closeOnBg(event,&#39;sheet-add&#39;)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">물건 등록</div>
+    <div class="photo-area" id="photo-area">
+      <div class="photo-area-icon">📷</div>
+      <div class="photo-area-text">아래 버튼으로 사진을 추가하세요</div>
+      <img id="photo-preview" src="file:///C:/Users/ohyg/Downloads/index_1.html" alt="" style="display:none">
+    </div>
+    <div class="photo-btn-row" id="photo-btn-row" style="display: grid;">
+      <button class="photo-btn" onclick="openCamera()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M1 5.5A1.5 1.5 0 012.5 4h.382a1 1 0 00.894-.553l.448-.894A1 1 0 015.118 2h5.764a1 1 0 01.894.553l.448.894A1 1 0 0013.118 4h.382A1.5 1.5 0 0115 5.5v7A1.5 1.5 0 0113.5 14h-11A1.5 1.5 0 011 12.5v-7z" stroke="currentColor" stroke-width="1.3"></path><circle cx="8" cy="9" r="2.5" stroke="currentColor" stroke-width="1.3"></circle></svg>
+        카메라 촬영
+      </button>
+      <button class="photo-btn" onclick="document.getElementById(&#39;photo-input&#39;).click()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.3"></rect><path d="M1 11l4-4 3 3 2-2 5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="5" cy="5" r="1.2" fill="currentColor"></circle></svg>
+        갤러리 선택
+      </button>
+    </div>
+    <div class="photo-btn-row" id="photo-change-row" style="display:none">
+      <button class="photo-btn" onclick="openCamera()">재촬영</button>
+      <button class="photo-btn" onclick="document.getElementById(&#39;photo-input&#39;).click()">갤러리 변경</button>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)" style="display:none">
+    <div class="form-group">
+      <div class="form-row2" style="margin-bottom:0">
+        <div>
+          <label class="form-label">품명</label>
+          <input class="form-input" type="text" id="f-name" placeholder="예: 텀블러">
+        </div>
+        <div>
+          <label class="form-label">제조사</label>
+          <input class="form-input" type="text" id="f-brand" placeholder="예: Stanley">
+        </div>
+      </div>
+    </div>
+    <div class="form-row2">
+      <div class="form-group">
+        <label class="form-label">카테고리</label>
+        <select class="form-select" id="f-cat"><option value="전자기기">전자기기</option><option value="의류/패션">의류/패션</option><option value="골동품/수집품">골동품/수집품</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">상태</label>
+        <select class="form-select" id="f-status">
+          <option value="own">소장 중</option>
+          <option value="wish">위시리스트</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row2">
+      <div class="form-group">
+        <label class="form-label">가격 (원)</label>
+        <input class="form-input" type="number" id="f-price" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">구입 날짜</label>
+        <input class="form-input" type="date" id="f-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">우선순위</label>
+      <select class="form-select" id="f-priority">
+        <option value="high">🔴 높음</option>
+        <option value="mid" selected="">🟠 보통</option>
+        <option value="low">🟢 낮음</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모</label>
+      <textarea class="form-textarea" id="f-memo" placeholder="구매 이유, 특이사항 등..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveItem()">저장하기</button>
+    <button class="btn-secondary" onclick="closeModal(&#39;sheet-add&#39;)">취소</button>
+  </div>
+</div>
+
+<!-- 상세 보기 -->
+<div class="overlay-full" id="sheet-detail">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </button>
+    <div class="detail-header-title" id="detail-header-title"></div>
+    <button class="icon-btn" onclick="openEditModal()" title="수정">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5a1.414 1.414 0 012 2L5 13H3v-2L11.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-photo" id="detail-photo"></div>
+    <div class="detail-name" id="detail-name"></div>
+    <div class="detail-meta-row" id="detail-meta"></div>
+    <div class="detail-section">
+      <div class="detail-section-label">정보</div>
+      <div id="detail-info-rows"></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-label">메모</div>
+      <div class="detail-memo-box" id="detail-memo"></div>
+    </div>
+  </div>
+  <div class="detail-actions">
+    <button class="btn-danger-outline" onclick="openDisposeFromDetail()">처분하기</button>
+  </div>
+</div>
+
+<!-- 수정 시트 -->
+<div class="overlay" id="sheet-edit" onclick="closeOnBg(event,&#39;sheet-edit&#39;)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">물건 수정</div>
+    <div class="photo-area" id="edit-photo-area">
+      <div class="photo-area-icon">📷</div>
+      <div class="photo-area-text">아래 버튼으로 사진을 변경하세요</div>
+      <img id="edit-photo-preview" src="file:///C:/Users/ohyg/Downloads/index_1.html" alt="" style="display:none">
+    </div>
+    <div class="photo-btn-row">
+      <button class="photo-btn" onclick="openCameraFor(&#39;edit&#39;)">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M1 5.5A1.5 1.5 0 012.5 4h.382a1 1 0 00.894-.553l.448-.894A1 1 0 015.118 2h5.764a1 1 0 01.894.553l.448.894A1 1 0 0013.118 4h.382A1.5 1.5 0 0115 5.5v7A1.5 1.5 0 0113.5 14h-11A1.5 1.5 0 011 12.5v-7z" stroke="currentColor" stroke-width="1.3"></path><circle cx="8" cy="9" r="2.5" stroke="currentColor" stroke-width="1.3"></circle></svg>
+        카메라 촬영
+      </button>
+      <button class="photo-btn" onclick="document.getElementById(&#39;edit-photo-input&#39;).click()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.3"></rect><path d="M1 11l4-4 3 3 2-2 5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="5" cy="5" r="1.2" fill="currentColor"></circle></svg>
+        갤러리 선택
+      </button>
+    </div>
+    <input type="file" id="edit-photo-input" accept="image/*" onchange="handleEditPhoto(event)" style="display:none">
+    <div class="form-group">
+      <div class="form-row2" style="margin-bottom:0">
+        <div>
+          <label class="form-label">품명</label>
+          <input class="form-input" type="text" id="e-name" placeholder="예: 텀블러">
+        </div>
+        <div>
+          <label class="form-label">제조사</label>
+          <input class="form-input" type="text" id="e-brand" placeholder="예: Stanley">
+        </div>
+      </div>
+    </div>
+    <div class="form-row2">
+      <div class="form-group">
+        <label class="form-label">카테고리</label>
+        <select class="form-select" id="e-cat"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">상태</label>
+        <select class="form-select" id="e-status">
+          <option value="own">소장 중</option>
+          <option value="wish">위시리스트</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row2">
+      <div class="form-group">
+        <label class="form-label">가격 (원)</label>
+        <input class="form-input" type="number" id="e-price" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">구입 날짜</label>
+        <input class="form-input" type="date" id="e-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">우선순위</label>
+      <select class="form-select" id="e-priority">
+        <option value="high">🔴 높음</option>
+        <option value="mid">🟠 보통</option>
+        <option value="low">🟢 낮음</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모</label>
+      <textarea class="form-textarea" id="e-memo" placeholder="구매 이유, 특이사항 등..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveEdit()">수정 저장</button>
+    <button class="btn-secondary" onclick="closeModal(&#39;sheet-edit&#39;)">취소</button>
+  </div>
+</div>
+
+<!-- 처분 시트 -->
+<div class="overlay" id="sheet-dispose" onclick="closeOnBg(event,&#39;sheet-dispose&#39;)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="dispose-title">처분 방법 선택</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:4px">처분 후 목록에서 삭제됩니다.</p>
+    <div class="dispose-grid">
+      <div class="dispose-opt" id="opt-sell" onclick="selectDispose(&#39;sell&#39;)">
+        <div class="dispose-opt-icon">🏷️</div>
+        <div class="dispose-opt-label">중고 판매</div>
+        <div class="dispose-opt-sub">직거래·중고앱 등</div>
+      </div>
+      <div class="dispose-opt" id="opt-trash" onclick="selectDispose(&#39;trash&#39;)">
+        <div class="dispose-opt-icon">🗑️</div>
+        <div class="dispose-opt-label">버림</div>
+        <div class="dispose-opt-sub">폐기·기증 등</div>
+      </div>
+    </div>
+    <button class="btn-danger" id="btn-dispose-confirm" onclick="confirmDispose()">처분 확정 — 삭제</button>
+    <button class="btn-secondary" onclick="closeModal(&#39;sheet-dispose&#39;)">취소</button>
+  </div>
+</div>
+
+<!-- 카테고리 관리 시트 -->
+<div class="overlay" id="sheet-cat" onclick="closeOnBg(event,&#39;sheet-cat&#39;)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">카테고리 관리</div>
+    <div class="cat-list" id="cat-list"></div>
+    <button class="add-cat-row" onclick="addCatRow()">+ 카테고리 추가</button>
+    <button class="btn-primary" onclick="saveCats()">저장하기</button>
+    <button class="btn-secondary" onclick="closeModal(&#39;sheet-cat&#39;)">취소</button>
+  </div>
+</div>
+
+<script>
+const CAT_ICONS_MAP = {'전자기기':'💻','의류/패션':'👔','골동품/수집품':'🏺','책/문구':'📚','스포츠':'⚽','악기':'🎸','카메라':'📷','시계':'⌚','주방':'🍳','기타':'📦'};
+const FALLBACK_ICONS = ['🎨','🧩','💎','🎭','🎪','🌿'];
+function catIcon(cat) {
+  return CAT_ICONS_MAP[cat] || FALLBACK_ICONS[categories.indexOf(cat) % FALLBACK_ICONS.length] || '📦';
+}
+
+function load(key, def) { try { const v=localStorage.getItem(key); return v?JSON.parse(v):def; } catch(e){return def;} }
+function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
+let categories = load('bc_cats', ['전자기기','의류/패션','골동품/수집품']);
+let items = load('bc_items', []);
+let nextId = load('bc_nextid', 1);
+let currentTab='all', currentFilter='all';
+let disposeTargetId=null, disposeMethod=null;
+let currentPhotoData='';
+let detailItemId=null;
+
+function persist() { save('bc_items',items); save('bc_cats',categories); save('bc_nextid',nextId); }
+function fmtDate(d) { if(!d)return'미입력'; const[y,m,day]=d.split('-'); return`${y}.${m}.${day}`; }
+function priorityLabel(p) { return{high:'높음',mid:'보통',low:'낮음'}[p]||p; }
+function priorityColor(p) { return{high:'#e53935',mid:'#fb8c00',low:'#43a047'}[p]||'#999'; }
+
+function switchTab(tab,el) {
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAll();
+}
+function setFilter(f) { currentFilter=f; renderFilters(); renderItems(); }
+
+function openAddModal() {
+  currentPhotoData='';
+  const preview=document.getElementById('photo-preview');
+  preview.src=''; preview.style.display='none';
+  document.getElementById('photo-area').classList.remove('has-photo');
+  document.getElementById('photo-btn-row').style.display='grid';
+  document.getElementById('photo-change-row').style.display='none';
+  document.getElementById('photo-input').value='';
+  document.getElementById('f-cat').innerHTML=categories.map(c=>`<option value="${c}">${c}</option>`).join('');
+  ['f-name','f-brand','f-price','f-date','f-memo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-priority').value='mid';
+  document.getElementById('sheet-add').classList.add('open');
+}
+function openCatModal() { renderCatList(); document.getElementById('sheet-cat').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeOnBg(e,id) { if(e.target===document.getElementById(id)) closeModal(id); }
+
+
+let camStream = null;
+let camFacingMode = 'environment';
+
+let photoTarget = 'add'; // 'add' or 'edit'
+
+async function openCamera() {
+  photoTarget = 'add';
+  document.getElementById('cam-overlay').classList.add('open');
+  await startStream();
+}
+
+async function openCameraFor(target) {
+  photoTarget = target;
+  document.getElementById('cam-overlay').classList.add('open');
+  await startStream();
+}
+
+async function startStream() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); }
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: camFacingMode, width: { ideal: 1280 }, height: { ideal: 1280 } },
+      audio: false
+    });
+    document.getElementById('cam-video').srcObject = camStream;
+  } catch(err) {
+    alert('카메라를 열 수 없습니다. 브라우저에서 카메라 권한을 허용해 주세요.');
+    closeCamera();
+  }
+}
+
+function flipCamera() {
+  camFacingMode = camFacingMode === 'environment' ? 'user' : 'environment';
+  startStream();
+}
+
+function closeCamera() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  document.getElementById('cam-overlay').classList.remove('open');
+  document.getElementById('cam-video').srcObject = null;
+}
+
+function shootPhoto() {
+  const video = document.getElementById('cam-video');
+  const canvas = document.getElementById('cam-canvas');
+  const size = Math.min(video.videoWidth, video.videoHeight);
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const ox = (video.videoWidth - size) / 2;
+  const oy = (video.videoHeight - size) / 2;
+  if (camFacingMode === 'user') {
+    ctx.save(); ctx.scale(-1, 1); ctx.translate(-size, 0);
+    ctx.drawImage(video, ox, oy, size, size, 0, 0, size, size);
+    ctx.restore();
+  } else {
+    ctx.drawImage(video, ox, oy, size, size, 0, 0, size, size);
+  }
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  if (photoTarget === 'edit') {
+    editPhotoData = dataUrl;
+    const ep = document.getElementById('edit-photo-preview');
+    ep.src = dataUrl; ep.style.display = 'block';
+    document.getElementById('edit-photo-area').classList.add('has-photo');
+  } else {
+    currentPhotoData = dataUrl;
+    const preview = document.getElementById('photo-preview');
+    preview.src = dataUrl; preview.style.display = 'block';
+    document.getElementById('photo-area').classList.add('has-photo');
+    document.getElementById('photo-btn-row').style.display = 'none';
+    document.getElementById('photo-change-row').style.display = 'grid';
+  }
+  closeCamera();
+}
+
+function handlePhoto(e) {
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    currentPhotoData=ev.target.result;
+    const preview=document.getElementById('photo-preview');
+    preview.src=currentPhotoData; preview.style.display='block';
+    document.getElementById('photo-area').classList.add('has-photo');
+    document.getElementById('photo-btn-row').style.display='none';
+    document.getElementById('photo-change-row').style.display='grid';
+  };
+  reader.readAsDataURL(file);
+}
+
+let editPhotoData = '';
+
+function openEditModal() {
+  if (!detailItemId) return;
+  const item = items.find(i => i.id === detailItemId);
+  if (!item) return;
+  editPhotoData = item.photo || '';
+  const ep = document.getElementById('edit-photo-preview');
+  const ea = document.getElementById('edit-photo-area');
+  if (editPhotoData) {
+    ep.src = editPhotoData; ep.style.display = 'block';
+    ea.classList.add('has-photo');
+  } else {
+    ep.src = ''; ep.style.display = 'none';
+    ea.classList.remove('has-photo');
+  }
+  document.getElementById('e-cat').innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('e-name').value = item.name;
+  document.getElementById('e-brand').value = item.brand || '';
+  document.getElementById('e-cat').value = item.cat;
+  document.getElementById('e-status').value = item.status;
+  document.getElementById('e-price').value = item.price || '';
+  document.getElementById('e-date').value = item.date || '';
+  document.getElementById('e-priority').value = item.priority;
+  document.getElementById('e-memo').value = item.memo || '';
+  document.getElementById('sheet-edit').classList.add('open');
+}
+
+function handleEditPhoto(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    editPhotoData = ev.target.result;
+    const ep = document.getElementById('edit-photo-preview');
+    ep.src = editPhotoData; ep.style.display = 'block';
+    document.getElementById('edit-photo-area').classList.add('has-photo');
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveEdit() {
+  const name = document.getElementById('e-name').value.trim();
+  if (!name) { document.getElementById('e-name').focus(); return; }
+  const idx = items.findIndex(i => i.id === detailItemId);
+  if (idx === -1) return;
+  const editBrand = document.getElementById('e-brand').value.trim();
+  items[idx] = {
+    ...items[idx],
+    name,
+    brand: editBrand,
+    cat: document.getElementById('e-cat').value,
+    status: document.getElementById('e-status').value,
+    price: parseInt(document.getElementById('e-price').value) || 0,
+    priority: document.getElementById('e-priority').value,
+    date: document.getElementById('e-date').value,
+    memo: document.getElementById('e-memo').value.trim(),
+    photo: editPhotoData
+  };
+  persist();
+  closeModal('sheet-edit');
+  openDetail(detailItemId);
+  renderAll();
+}
+
+function saveItem() {
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){document.getElementById('f-name').focus();return;}
+  const brand = document.getElementById('f-brand').value.trim();
+  items.push({
+    id:nextId++, name,
+    brand,
+    cat:document.getElementById('f-cat').value,
+    status:document.getElementById('f-status').value,
+    price:parseInt(document.getElementById('f-price').value)||0,
+    priority:document.getElementById('f-priority').value,
+    date:document.getElementById('f-date').value,
+    memo:document.getElementById('f-memo').value.trim(),
+    photo:currentPhotoData
+  });
+  persist(); closeModal('sheet-add'); renderAll();
+}
+
+function openDetail(id) {
+  const item=items.find(i=>i.id===id); if(!item) return;
+  detailItemId=id;
+  document.getElementById('detail-header-title').textContent=(item.brand ? item.brand+' ' : '')+item.name;
+  document.getElementById('detail-name').innerHTML =
+    (item.brand ? `<span style="display:block;font-size:13px;font-weight:400;color:var(--text3);margin-bottom:2px">${item.brand}</span>` : '') +
+    item.name;
+  const photoEl=document.getElementById('detail-photo');
+  photoEl.innerHTML=item.photo
+    ?`<img src="${item.photo}" alt="${item.name}">`
+    :`<span style="font-size:64px">${catIcon(item.cat)}</span>`;
+  document.getElementById('detail-meta').innerHTML=`
+    <span class="badge ${item.status==='own'?'badge-own':'badge-wish'}">${item.status==='own'?'소장 중':'위시리스트'}</span>
+    <span class="badge badge-cat">${item.cat}</span>
+    <span style="font-size:11px;color:${priorityColor(item.priority)};font-weight:700">● ${priorityLabel(item.priority)}</span>
+  `;
+  document.getElementById('detail-info-rows').innerHTML=`
+    ${item.brand ? `<div class="detail-row"><span class="detail-row-label">제조사</span><span class="detail-row-val">${item.brand}</span></div>` : ''}
+    <div class="detail-row"><span class="detail-row-label">가격</span><span class="detail-row-val">${item.price.toLocaleString()}원</span></div>
+    <div class="detail-row"><span class="detail-row-label">구입 날짜</span><span class="detail-row-val">${fmtDate(item.date)}</span></div>
+    <div class="detail-row"><span class="detail-row-label">카테고리</span><span class="detail-row-val">${item.cat}</span></div>
+  `;
+  document.getElementById('detail-memo').textContent=item.memo||'메모 없음';
+  document.getElementById('sheet-detail').classList.add('open');
+}
+function closeDetail() { document.getElementById('sheet-detail').classList.remove('open'); detailItemId=null; }
+
+function openDispose(id,e) {
+  if(e) e.stopPropagation();
+  disposeTargetId=id; disposeMethod=null;
+  const item=items.find(i=>i.id===id);
+  document.getElementById('dispose-title').textContent=`"${item.brand ? item.brand+' ' : ''}${item.name}" 처분`;
+  document.getElementById('opt-sell').classList.remove('selected');
+  document.getElementById('opt-trash').classList.remove('selected');
+  document.getElementById('btn-dispose-confirm').classList.remove('enabled');
+  document.getElementById('sheet-dispose').classList.add('open');
+}
+function openDisposeFromDetail() { if(detailItemId) openDispose(detailItemId); }
+function selectDispose(method) {
+  disposeMethod=method;
+  document.getElementById('opt-sell').classList.toggle('selected',method==='sell');
+  document.getElementById('opt-trash').classList.toggle('selected',method==='trash');
+  document.getElementById('btn-dispose-confirm').classList.add('enabled');
+}
+function confirmDispose() {
+  if(!disposeTargetId||!disposeMethod) return;
+  items=items.filter(i=>i.id!==disposeTargetId);
+  disposeTargetId=null; disposeMethod=null;
+  persist(); closeModal('sheet-dispose'); closeDetail(); renderAll();
+}
+
+function renderCatList() {
+  document.getElementById('cat-list').innerHTML=categories.map((c,i)=>`
+    <div class="cat-row">
+      <input class="form-input" type="text" value="${c}" id="cat-inp-${i}">
+      <button class="cat-del" onclick="delCatRow(${i})">✕</button>
+    </div>
+  `).join('');
+}
+function addCatRow() {
+  categories.push(''); renderCatList();
+  const inputs=document.querySelectorAll('#cat-list .form-input');
+  inputs[inputs.length-1].focus();
+}
+function delCatRow(i) { categories.splice(i,1); renderCatList(); }
+function saveCats() {
+  const inputs=document.querySelectorAll('#cat-list .form-input');
+  categories=Array.from(inputs).map(inp=>inp.value.trim()).filter(Boolean);
+  persist(); closeModal('sheet-cat'); renderAll();
+}
+
+function getFiltered() {
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase();
+  return items.filter(i=>{
+    if(currentTab==='own'&&i.status!=='own') return false;
+    if(currentTab==='wish'&&i.status!=='wish') return false;
+    if(currentFilter!=='all'&&i.cat!==currentFilter) return false;
+    if(q&&!i.name.toLowerCase().includes(q)&&!(i.brand||'').toLowerCase().includes(q)&&!(i.memo||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function renderStats() {
+  const own=items.filter(i=>i.status==='own');
+  const wish=items.filter(i=>i.status==='wish');
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-card"><div class="stat-label">소장 중</div><div class="stat-val">${own.length}개</div></div>
+    <div class="stat-card"><div class="stat-label">위시리스트</div><div class="stat-val">${wish.length}개</div></div>
+  `;
+}
+
+function renderFilters() {
+  document.getElementById('filter-bar').innerHTML=[
+    `<button class="filter-chip${currentFilter==='all'?' active':''}" onclick="setFilter('all')">전체</button>`,
+    ...categories.map(c=>`<button class="filter-chip${currentFilter===c?' active':''}" onclick="setFilter('${c}')">${c}</button>`)
+  ].join('');
+}
+
+function renderItems() {
+  const filtered=getFiltered();
+  document.getElementById('section-label').textContent=`${filtered.length}개 항목`;
+  const list=document.getElementById('item-list');
+  if(!filtered.length){
+    list.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">등록된 물건이 없습니다</div></div>`;
+    return;
+  }
+  list.innerHTML=filtered.map(i=>`
+    <div class="item-card" onclick="openDetail(${i.id})">
+      <div class="item-thumb">${i.photo?`<img src="${i.photo}" alt="${i.name}">`:catIcon(i.cat)}</div>
+      <div class="item-body">
+        <div class="item-name">${i.brand ? `<span style='font-size:10px;color:var(--text3);font-weight:400;margin-right:4px'>${i.brand}</span>` : ''}${i.name}</div>
+        <div class="item-memo">${i.memo||'메모 없음'}</div>
+        <div class="item-meta">
+          <span class="priority-dot p-${i.priority}"></span>
+          <span class="badge badge-cat">${i.cat}</span>
+          <span class="badge ${i.status==='own'?'badge-own':'badge-wish'}">${i.status==='own'?'소장':'위시'}</span>
+        </div>
+      </div>
+      <div class="item-right">
+        <button class="dispose-btn" onclick="openDispose(${i.id},event)" title="처분">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M2 3.5h9M5 3.5V2.5a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v1M5.5 3.5v6M7.5 3.5v6M3 3.5l.5 7a.5.5 0 00.5.5h5a.5.5 0 00.5-.5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="item-price">${i.price.toLocaleString()}원</div>
+        <div class="item-date-sm">${i.date?fmtDate(i.date):'구입일 미정'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAll() { renderStats(); renderFilters(); renderItems(); }
+renderAll();
+</script>
+
+<!-- 카메라 오버레이 -->
+<div class="cam-overlay" id="cam-overlay">
+  <div class="cam-header">
+    <button class="cam-close" onclick="closeCamera()">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 2l14 14M16 2L2 16" stroke="white" stroke-width="2" stroke-linecap="round"></path></svg>
+    </button>
+    <span class="cam-title">카메라</span>
+    <button class="cam-flip" id="cam-flip" onclick="flipCamera()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </button>
+  </div>
+  <div class="cam-viewfinder">
+    <video id="cam-video" autoplay="" playsinline="" muted=""></video>
+    <div class="cam-guide"></div>
+  </div>
+  <div class="cam-footer">
+    <div class="cam-shutter-wrap">
+      <button class="cam-shutter" id="cam-shutter" onclick="shootPhoto()"></button>
+    </div>
+  </div>
+  <canvas id="cam-canvas" style="display:none"></canvas>
+</div>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js');
+  });
+}
+</script>
+
+
+</body></html>
