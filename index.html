@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="보물창고">
 <meta name="theme-color" content="#1a1a1a">
-<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.svg">
 <title>보물창고</title>
 <style>
@@ -277,6 +277,14 @@
     border: 1px dashed var(--border2); background: none; color: var(--text3);
     font-size: 13px; font-family: inherit; cursor: pointer; margin-bottom: 14px;
   }
+  .sync-text-btn {
+    height: 36px; padding: 0 12px; border-radius: 10px;
+    border: 1px solid var(--border2); background: var(--bg);
+    display: flex; align-items: center; gap: 5px;
+    cursor: pointer; color: var(--text2); font-size: 12px; font-family: inherit;
+    white-space: nowrap;
+  }
+  .sync-text-btn:active { background: var(--surface2); transform: scale(0.95); }
 
   /* 카메라 오버레이 */
   .cam-overlay {
@@ -325,14 +333,20 @@
   <div class="header">
     <div class="header-top">
       <span class="header-title">🏺 보물창고</span>
-      <button class="icon-btn" onclick="openCatModal()" title="카테고리 관리">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
-          <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
-          <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
-          <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
-        </svg>
-      </button>
+      <div style="display:flex;gap:8px">
+        <button class="sync-text-btn" id="sync-btn" onclick="gistSave()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 8A5.5 5.5 0 112.5 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2.5 2v3.5H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="sync-label">동기화</span>
+        </button>
+        <button class="icon-btn" onclick="openCatModal()" title="카테고리 관리">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <div class="tabs">
       <button class="tab active" onclick="switchTab('all',this)">전체</button>
@@ -543,6 +557,23 @@
   </div>
 </div>
 
+<!-- 토큰 설정 시트 (최초 1회 / 변경 시) -->
+<div class="overlay" id="sheet-token" onclick="closeOnBg(event,'sheet-token')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">GitHub 토큰 설정</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.6">GitHub Personal Access Token을 입력하면 데이터가 자동으로 저장됩니다. 토큰은 이 기기에만 저장됩니다.</p>
+    <div class="form-group">
+      <label class="form-label">Personal Access Token</label>
+      <input class="form-input" type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx">
+      <div style="font-size:11px;color:var(--text3);margin-top:5px">github.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → repo 권한 선택</div>
+    </div>
+    <div id="token-status" style="font-size:12px;margin-bottom:12px;padding:10px;border-radius:8px;display:none"></div>
+    <button class="btn-primary" onclick="saveToken()">저장</button>
+    <button class="btn-secondary" style="margin-top:8px" onclick="closeModal('sheet-token')">취소</button>
+  </div>
+</div>
+
 <!-- 카테고리 관리 시트 -->
 <div class="overlay" id="sheet-cat" onclick="closeOnBg(event,'sheet-cat')">
   <div class="sheet">
@@ -573,7 +604,193 @@ let disposeTargetId=null, disposeMethod=null;
 let currentPhotoData='';
 let detailItemId=null;
 
-function persist() { save('bc_items',items); save('bc_cats',categories); save('bc_nextid',nextId); }
+// ── GitHub 저장소 동기화 ──
+let ghToken = load('bc_gh_token', '');
+const GH_USERNAME = 'RockyMarciano-1';
+const GH_REPO     = 'bomulchanggo';
+const GH_FILE     = 'data.json';
+
+function openGistModal() {
+  if (!ghToken) { openTokenModal(); return; }
+  gistSave();
+}
+
+function openTokenModal() {
+  document.getElementById('token-input').value = ghToken;
+  document.getElementById('token-status').style.display = 'none';
+  document.getElementById('sheet-token').classList.add('open');
+}
+
+function saveToken() {
+  const val = document.getElementById('token-input').value.trim();
+  if (!val) {
+    const el = document.getElementById('token-status');
+    el.style.display = 'block';
+    el.style.background = '#ffebee'; el.style.color = '#c62828';
+    el.textContent = '토큰을 입력해주세요.';
+    return;
+  }
+  ghToken = val;
+  save('bc_gh_token', ghToken);
+  closeModal('sheet-token');
+  // 저장 후 자동저장 한 번 실행
+  if (items.length > 0) autoSaveToGithub();
+}
+
+// 앱 시작 시 토큰 없으면 안내
+function checkTokenOnStart() {
+  if (!ghToken) {
+    setTimeout(() => {
+      if (!ghToken) openTokenModal();
+    }, 800);
+  }
+}
+
+
+
+function ghApiUrl() {
+  return `https://api.github.com/repos/${GH_USERNAME}/${GH_REPO}/contents/${GH_FILE}`;
+}
+
+async function gistSave() {
+  if (!ghToken) { openTokenModal(); return; }
+
+  showSyncIndicator('saving');
+
+  try {
+    const headers = { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' };
+
+    // 기존 파일 SHA 조회 (업데이트 시 필요)
+    let sha = '';
+    const getRes = await fetch(ghApiUrl(), { headers });
+    if (getRes.ok) {
+      const getJson = await getRes.json();
+      sha = getJson.sha;
+    }
+
+    // 데이터를 Base64로 인코딩
+    const data = JSON.stringify({ items, categories, nextId, savedAt: new Date().toISOString() }, null, 2);
+    const encoded = btoa(unescape(encodeURIComponent(data)));
+
+    const body = {
+      message: `보물창고 데이터 저장 (${new Date().toLocaleString('ko-KR')})`,
+      content: encoded,
+      ...(sha ? { sha } : {})
+    };
+
+    const res = await fetch(ghApiUrl(), {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(body)
+    });
+    const json = await res.json();
+
+    if (res.ok) {
+      showSyncIndicator('ok');
+    } else {
+      showSyncIndicator('err');
+    }
+  } catch(e) {
+    showSyncIndicator('err');
+  }
+
+}
+
+async function gistLoad() {
+  if (!ghToken) { openTokenModal(); return; }
+
+  showSyncIndicator('saving');
+
+  try {
+    const res = await fetch(ghApiUrl(), {
+      headers: { Authorization: `token ${ghToken}` }
+    });
+    const json = await res.json();
+
+    if (!res.ok) {
+      showSyncIndicator('err');
+      return;
+    }
+
+    const decoded = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+    const parsed  = JSON.parse(decoded);
+    items      = parsed.items      || [];
+    categories = parsed.categories || ['전자기기','의류/패션','골동품/수집품'];
+    nextId     = parsed.nextId     || 1;
+    persist();
+    renderAll();
+    const savedAt = parsed.savedAt ? new Date(parsed.savedAt).toLocaleString('ko-KR') : '';
+    showSyncIndicator('ok');
+  } catch(e) {
+    showSyncIndicator('err');
+  }
+
+}
+
+function persist() {
+  save('bc_items', items);
+  save('bc_cats', categories);
+  save('bc_nextid', nextId);
+  // 토큰이 있으면 자동으로 GitHub에 저장
+  if (ghToken) autoSaveToGithub();
+}
+
+// 자동 저장 — 연속 호출 방지를 위해 1.5초 디바운스
+let autoSaveTimer = null;
+function autoSaveToGithub() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(async () => {
+    showSyncIndicator('saving');
+    try {
+      const headers = { Authorization: `token ${ghToken}`, 'Content-Type': 'application/json' };
+      let sha = '';
+      const getRes = await fetch(ghApiUrl(), { headers });
+      if (getRes.ok) { sha = (await getRes.json()).sha; }
+
+      const data = JSON.stringify({ items, categories, nextId, savedAt: new Date().toISOString() }, null, 2);
+      const encoded = btoa(unescape(encodeURIComponent(data)));
+      const body = {
+        message: `자동 저장 (${new Date().toLocaleString('ko-KR')})`,
+        content: encoded,
+        ...(sha ? { sha } : {})
+      };
+      const res = await fetch(ghApiUrl(), { method: 'PUT', headers, body: JSON.stringify(body) });
+      showSyncIndicator(res.ok ? 'ok' : 'err');
+    } catch(e) {
+      showSyncIndicator('err');
+    }
+  }, 1500);
+}
+
+// 헤더 동기화 버튼 상태 표시
+function showSyncIndicator(state) {
+  const btn = document.getElementById('sync-btn');
+  const lbl = document.getElementById('sync-label');
+  if (!btn || !lbl) return;
+  if (state === 'saving') {
+    btn.style.borderColor = '#fb8c00';
+    btn.style.color = '#fb8c00';
+    lbl.textContent = '저장 중...';
+  } else if (state === 'ok') {
+    btn.style.borderColor = '#43a047';
+    btn.style.color = '#43a047';
+    lbl.textContent = '저장 완료 ✓';
+    setTimeout(() => {
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      lbl.textContent = '동기화';
+    }, 3000);
+  } else {
+    btn.style.borderColor = '#e53935';
+    btn.style.color = '#e53935';
+    lbl.textContent = '저장 실패 — 재시도';
+    setTimeout(() => {
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      lbl.textContent = '동기화';
+    }, 5000);
+  }
+}
 function fmtDate(d) { if(!d)return'미입력'; const[y,m,day]=d.split('-'); return`${y}.${m}.${day}`; }
 function priorityLabel(p) { return{high:'높음',mid:'보통',low:'낮음'}[p]||p; }
 function priorityColor(p) { return{high:'#e53935',mid:'#fb8c00',low:'#43a047'}[p]||'#999'; }
@@ -899,6 +1116,7 @@ function renderItems() {
 
 function renderAll() { renderStats(); renderFilters(); renderItems(); }
 renderAll();
+checkTokenOnStart();
 </script>
 
 <!-- 카메라 오버레이 -->
@@ -926,24 +1144,7 @@ renderAll();
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js', { scope: './' })
-      .then(reg => {
-        console.log('SW 등록 성공:', reg.scope);
-        // 새 버전이 있으면 즉시 활성화
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              newWorker.postMessage({ action: 'skipWaiting' });
-            }
-          });
-        });
-      })
-      .catch(err => console.log('SW 등록 실패:', err));
-  });
-  // 새 서비스워커 활성화 시 페이지 새로고침
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload();
+    navigator.serviceWorker.register('sw.js');
   });
 }
 </script>
